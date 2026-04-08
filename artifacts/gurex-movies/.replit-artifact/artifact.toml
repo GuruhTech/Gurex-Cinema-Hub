@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "GUREX MOVIES"
+version = "1.0.0"
+id = "artifacts/gurex-movies"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19464
+
+[services.development]
+run = "pnpm --filter @workspace/gurex-movies run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/gurex-movies", "run", "build" ]
+publicDir = "artifacts/gurex-movies/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19464"
+BASE_PATH = "/"
