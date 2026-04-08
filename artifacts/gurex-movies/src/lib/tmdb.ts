@@ -27,6 +27,24 @@ export function getImageUrl(path: string | null, size: string = "w500"): string 
   return `${TMDB_IMAGE_BASE}/${size}${path}`;
 }
 
+export async function getExternalIds(mediaType: "movie" | "tv", tmdbId: number): Promise<{ imdb_id: string | null }> {
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/${mediaType}/${tmdbId}/external_ids`,
+      {
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!res.ok) return { imdb_id: null };
+    return res.json();
+  } catch {
+    return { imdb_id: null };
+  }
+}
+
 async function tmdbFetch<T>(endpoint: string, params: Record<string, string | number> = {}): Promise<T> {
   const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));

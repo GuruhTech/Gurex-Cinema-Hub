@@ -1,16 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "wouter";
 import {
   Play, Star, Clock, Calendar, Globe, BookmarkCheck, Bookmark,
-  Heart, ChevronLeft, Users, Award, Film, ExternalLink
+  Heart, ChevronLeft, Users, Film, ExternalLink, Tv2, Trophy
 } from "lucide-react";
 import { Link } from "wouter";
 import {
   tmdb, getImageUrl, formatVoteAverage, formatRuntime, formatDate, getYear,
-  getRatingColor, watchlist, favorites, ratings
+  getRatingColor, watchlist, favorites, ratings, getExternalIds
 } from "@/lib/tmdb";
+import { omdb, getRottenTomatoesScore, getMetacriticScore } from "@/lib/omdb";
+import type { OmdbData } from "@/lib/omdb";
 import TrailerModal from "@/components/TrailerModal";
+import StreamModal from "@/components/StreamModal";
 import MovieRow from "@/components/MovieRow";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -18,6 +21,9 @@ export default function MovieDetailPage() {
   const { id } = useParams<{ id: string }>();
   const movieId = parseInt(id || "0");
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
+  const [streaming, setStreaming] = useState(false);
+  const [imdbId, setImdbId] = useState<string | null>(null);
+  const [omdbData, setOmdbData] = useState<OmdbData | null>(null);
   const [userRating, setUserRating] = useState<number | null>(() => ratings.get_(movieId, "movie"));
   const [isBookmarked, setIsBookmarked] = useState(() => watchlist.has(movieId, "movie"));
   const [isFavorited, setIsFavorited] = useState(() => favorites.has(movieId, "movie"));
@@ -29,6 +35,22 @@ export default function MovieDetailPage() {
     queryFn: () => tmdb.movies.details(movieId),
     enabled: !!movieId,
   });
+
+  useEffect(() => {
+    if (!movie) return;
+    getExternalIds("movie", movieId).then(async (ext) => {
+      const id = ext?.imdb_id ?? null;
+      setImdbId(id);
+      if (id) {
+        const data = await omdb.byImdbId(id);
+        setOmdbData(data);
+      } else {
+        const year = movie.release_date ? new Date(movie.release_date).getFullYear().toString() : undefined;
+        const data = await omdb.byTitle(movie.title, year);
+        setOmdbData(data);
+      }
+    });
+  }, [movie, movieId]);
 
   if (isLoading) return <LoadingSpinner size="lg" />;
   if (error || !movie) return (
@@ -89,8 +111,20 @@ export default function MovieDetailPage() {
 
   const director = (movie as any).credits?.crew?.find((c: any) => c.job === "Director");
 
+  const rtScore = omdbData ? getRottenTomatoesScore(omdbData) : null;
+  const mcScore = omdbData ? getMetacriticScore(omdbData) : null;
+
   return (
     <div className="min-h-screen">
+      {streaming && (
+        <StreamModal
+          tmdbId={movieId}
+          imdbId={imdbId}
+          title={movie.title}
+          mediaType="movie"
+          onClose={() => setStreaming(false)}
+        />
+      )}
       {trailerKey && (
         <TrailerModal
           videoKey={trailerKey}
@@ -213,13 +247,26 @@ export default function MovieDetailPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex flex-wrap gap-3 mb-8">
+            <div className="flex flex-wrap gap-3 mb-6">
+              {/* MAIN Watch Now button */}
+              <button
+                onClick={() => setStreaming(true)}
+                className="flex items-center gap-2 text-white font-black px-7 py-3.5 rounded-full transition-all duration-200 hover:scale-105"
+                style={{
+                  background: "linear-gradient(135deg, #ff6b35, #e85d2e)",
+                  boxShadow: "0 0 30px rgba(255,107,53,0.4), 0 4px 20px rgba(255,107,53,0.2)",
+                }}
+              >
+                <Play size={20} fill="white" />
+                Watch Now
+              </button>
+
               {trailer && (
                 <button
                   onClick={() => setTrailerKey(trailer.key)}
-                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold px-6 py-3 rounded-full transition-all duration-200 hover:scale-105 glow-primary"
+                  className="flex items-center gap-2 glass text-white font-bold px-6 py-3.5 rounded-full transition-all duration-200 hover:scale-105 hover:bg-white/10"
                 >
-                  <Play size={18} fill="white" />
+                  <Tv2 size={18} />
                   Play Trailer
                 </button>
               )}
@@ -253,6 +300,72 @@ export default function MovieDetailPage() {
                 </a>
               )}
             </div>
+
+            {/* OMDB Multi-Source Ratings */}
+            {omdbData && (
+              <div className="mb-6 p-4 rounded-2xl border border-white/8"
+                style={{ background: "rgba(20,22,30,0.7)", backdropFilter: "blur(12px)" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Trophy size={14} className="text-yellow-400" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Ratings</span>
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  {omdbData.imdbRating && omdbData.imdbRating !== "N/A" && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                        <Star size={14} className="text-yellow-400" fill="currentColor" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">IMDb</p>
+                        <p className="text-sm font-bold text-yellow-400">{omdbData.imdbRating}/10</p>
+                      </div>
+                    </div>
+                  )}
+                  {rtScore && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-red-500/20 flex items-center justify-center text-sm">🍅</div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Rotten Tomatoes</p>
+                        <p className="text-sm font-bold text-red-400">{rtScore}</p>
+                      </div>
+                    </div>
+                  )}
+                  {mcScore && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                        <span className="text-blue-400 text-xs font-black">M</span>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Metacritic</p>
+                        <p className="text-sm font-bold text-blue-400">{mcScore}</p>
+                      </div>
+                    </div>
+                  )}
+                  {omdbData.Awards && omdbData.Awards !== "N/A" && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                        <Trophy size={13} className="text-purple-400" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Awards</p>
+                        <p className="text-xs font-semibold text-purple-400 max-w-[180px] line-clamp-1">{omdbData.Awards}</p>
+                      </div>
+                    </div>
+                  )}
+                  {omdbData.BoxOffice && omdbData.BoxOffice !== "N/A" && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-green-500/20 flex items-center justify-center">
+                        <span className="text-green-400 text-xs font-black">$</span>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Box Office</p>
+                        <p className="text-sm font-bold text-green-400">{omdbData.BoxOffice}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Extra info */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-card border border-border">

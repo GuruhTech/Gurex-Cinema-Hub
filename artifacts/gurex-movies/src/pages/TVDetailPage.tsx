@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "wouter";
 import {
   Play, Star, Clock, Calendar, Globe, BookmarkCheck, Bookmark,
-  Heart, ChevronLeft, Users, Tv
+  Heart, ChevronLeft, Users, Tv, Tv2
 } from "lucide-react";
 import { Link } from "wouter";
 import {
@@ -11,6 +11,7 @@ import {
   getRatingColor, watchlist, favorites, ratings
 } from "@/lib/tmdb";
 import TrailerModal from "@/components/TrailerModal";
+import StreamModal from "@/components/StreamModal";
 import MovieRow from "@/components/MovieRow";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -18,6 +19,9 @@ export default function TVDetailPage() {
   const { id } = useParams<{ id: string }>();
   const tvId = parseInt(id || "0");
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
+  const [streaming, setStreaming] = useState(false);
+  const [streamSeason, setStreamSeason] = useState(1);
+  const [streamEpisode, setStreamEpisode] = useState(1);
   const [userRating, setUserRating] = useState<number | null>(() => ratings.get_(tvId, "tv"));
   const [isBookmarked, setIsBookmarked] = useState(() => watchlist.has(tvId, "tv"));
   const [isFavorited, setIsFavorited] = useState(() => favorites.has(tvId, "tv"));
@@ -90,6 +94,17 @@ export default function TVDetailPage() {
 
   return (
     <div className="min-h-screen">
+      {streaming && (
+        <StreamModal
+          tmdbId={tvId}
+          title={show.name}
+          mediaType="tv"
+          totalSeasons={mainSeasons.length || 1}
+          initialSeason={streamSeason}
+          initialEpisode={streamEpisode}
+          onClose={() => setStreaming(false)}
+        />
+      )}
       {trailerKey && (
         <TrailerModal
           videoKey={trailerKey}
@@ -206,12 +221,24 @@ export default function TVDetailPage() {
             </div>
 
             <div className="flex flex-wrap gap-3 mb-8">
+              {/* Watch Now button */}
+              <button
+                onClick={() => setStreaming(true)}
+                className="flex items-center gap-2 text-white font-black px-7 py-3.5 rounded-full transition-all duration-200 hover:scale-105"
+                style={{
+                  background: "linear-gradient(135deg, #ff6b35, #e85d2e)",
+                  boxShadow: "0 0 30px rgba(255,107,53,0.4), 0 4px 20px rgba(255,107,53,0.2)",
+                }}
+              >
+                <Play size={20} fill="white" />
+                Watch Now
+              </button>
               {trailer && (
                 <button
                   onClick={() => setTrailerKey(trailer.key)}
-                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold px-6 py-3 rounded-full transition-all duration-200 hover:scale-105 glow-primary"
+                  className="flex items-center gap-2 glass text-white font-bold px-6 py-3.5 rounded-full transition-all duration-200 hover:scale-105 hover:bg-white/10"
                 >
-                  <Play size={18} fill="white" />
+                  <Tv2 size={18} />
                   Play Trailer
                 </button>
               )}
