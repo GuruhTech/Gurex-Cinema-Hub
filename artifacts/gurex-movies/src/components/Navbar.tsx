@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Search, BookmarkCheck, Home, Flame, Star, Tv, Film, Menu, X, Heart } from "lucide-react";
+import { Search, BookmarkCheck, Home, Flame, Star, Tv, Film, Menu, X, Heart, Download, Clock } from "lucide-react";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showInstallToast, setShowInstallToast] = useState(false);
   const [, navigate] = useLocation();
   const searchRef = useRef<HTMLInputElement>(null);
+  const { canInstall, isInstalled, install } = usePWAInstall();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -32,6 +35,14 @@ export default function Navbar() {
     }
   };
 
+  const handleInstall = async () => {
+    const accepted = await install();
+    if (!accepted) {
+      setShowInstallToast(true);
+      setTimeout(() => setShowInstallToast(false), 4000);
+    }
+  };
+
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
     { href: "/trending", label: "Trending", icon: Flame },
@@ -42,6 +53,20 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Install toast notification */}
+      {showInstallToast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[200] px-4 py-3 rounded-xl glass border border-primary/30 shadow-xl flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
+          <Download size={16} className="text-primary flex-shrink-0" />
+          <div>
+            <p className="text-sm font-semibold">Install GUREX MOVIES</p>
+            <p className="text-xs text-muted-foreground">Tap your browser menu → "Add to Home Screen"</p>
+          </div>
+          <button onClick={() => setShowInstallToast(false)} className="p-1 rounded-full hover:bg-card ml-1">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled ? "nav-scrolled" : "bg-transparent"
@@ -53,7 +78,8 @@ export default function Navbar() {
             <Link href="/">
               <div className="flex items-center gap-2 cursor-pointer group">
                 <div className="relative">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center glow-primary transition-all duration-300 group-hover:scale-110">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                    style={{ boxShadow: "0 0 20px rgba(255,107,53,0.4)" }}>
                     <Film size={16} className="text-white" />
                   </div>
                 </div>
@@ -76,7 +102,7 @@ export default function Navbar() {
             </div>
 
             {/* Right Side */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {/* Search toggle */}
               {searchOpen ? (
                 <form onSubmit={handleSearch} className="flex items-center">
@@ -109,6 +135,12 @@ export default function Navbar() {
                 </button>
               )}
 
+              <Link href="/watch-later">
+                <button className="p-2 rounded-full hover:bg-card transition-all duration-200 hover:scale-110" aria-label="Watch Later">
+                  <Clock size={20} className="text-foreground" />
+                </button>
+              </Link>
+
               <Link href="/favorites">
                 <button className="p-2 rounded-full hover:bg-card transition-all duration-200 hover:scale-110" aria-label="Favorites">
                   <Heart size={20} className="text-foreground" />
@@ -120,6 +152,24 @@ export default function Navbar() {
                   <BookmarkCheck size={20} className="text-foreground" />
                 </button>
               </Link>
+
+              {/* PWA Install Button */}
+              {(canInstall || !isInstalled) && (
+                <button
+                  onClick={handleInstall}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 hover:scale-105"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,107,53,0.05))",
+                    border: "1px solid rgba(255,107,53,0.3)",
+                    color: "#ff6b35",
+                  }}
+                  aria-label="Install App"
+                  title={isInstalled ? "App installed!" : "Install GUREX MOVIES as an app"}
+                >
+                  <Download size={13} />
+                  <span className="hidden lg:block">{isInstalled ? "Installed" : "Install App"}</span>
+                </button>
+              )}
 
               {/* Mobile menu toggle */}
               <button
@@ -148,6 +198,19 @@ export default function Navbar() {
                   </button>
                 </Link>
               ))}
+              <Link href="/watch-later">
+                <button onClick={() => setMobileOpen(false)} className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-card text-sm font-medium transition-colors">
+                  <Clock size={18} className="text-blue-400" />
+                  Watch Later
+                </button>
+              </Link>
+              <button
+                onClick={() => { handleInstall(); setMobileOpen(false); }}
+                className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-card text-sm font-medium transition-colors text-primary"
+              >
+                <Download size={18} className="text-primary" />
+                {isInstalled ? "App Installed ✓" : "Install as App"}
+              </button>
               <form onSubmit={handleSearch} className="pt-2">
                 <div className="relative">
                   <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />

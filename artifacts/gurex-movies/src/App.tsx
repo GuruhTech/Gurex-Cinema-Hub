@@ -12,6 +12,7 @@ import TopRatedPage from "@/pages/TopRatedPage";
 import SearchPage from "@/pages/SearchPage";
 import WatchlistPage from "@/pages/WatchlistPage";
 import FavoritesPage from "@/pages/FavoritesPage";
+import WatchLaterPage from "@/pages/WatchLaterPage";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/search" component={SearchPage} />
       <Route path="/watchlist" component={WatchlistPage} />
       <Route path="/favorites" component={FavoritesPage} />
+      <Route path="/watch-later" component={WatchLaterPage} />
       <Route component={NotFound} />
     </Switch>
   );

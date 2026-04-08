@@ -366,6 +366,31 @@ export const favorites = {
   },
 };
 
+// Watch Later management
+export const watchLater = {
+  get: (): WatchlistItem[] => {
+    try {
+      return JSON.parse(localStorage.getItem("gurex_watch_later") || "[]");
+    } catch {
+      return [];
+    }
+  },
+  add: (item: Omit<WatchlistItem, "added_at">) => {
+    const list = watchLater.get();
+    if (!list.find((i) => i.id === item.id && i.media_type === item.media_type)) {
+      list.unshift({ ...item, added_at: new Date().toISOString() });
+      localStorage.setItem("gurex_watch_later", JSON.stringify(list));
+    }
+  },
+  remove: (id: number, mediaType: "movie" | "tv") => {
+    const list = watchLater.get().filter((i) => !(i.id === id && i.media_type === mediaType));
+    localStorage.setItem("gurex_watch_later", JSON.stringify(list));
+  },
+  has: (id: number, mediaType: "movie" | "tv") => {
+    return watchLater.get().some((i) => i.id === id && i.media_type === mediaType);
+  },
+};
+
 export function formatRuntime(minutes: number): string {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
