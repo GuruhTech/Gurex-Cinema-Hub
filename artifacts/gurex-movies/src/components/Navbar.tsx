@@ -76,19 +76,17 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 md:h-18">
             {/* Logo */}
             <Link href="/">
-              <div className="flex items-center gap-2 cursor-pointer group">
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-                    style={{ boxShadow: "0 0 20px rgba(255,107,53,0.4)" }}>
-                    <Film size={16} className="text-white" />
-                  </div>
-                </div>
-                <span className="text-xl font-black tracking-wider gradient-text hidden sm:block">
-                  GUREX
-                </span>
-                <span className="text-xl font-black tracking-wider text-white hidden sm:block">
-                  MOVIES
-                </span>
+              <div className="flex items-center gap-2.5 cursor-pointer group">
+                <img
+                  src="/logo-icon.svg"
+                  alt="GURU EX icon"
+                  className="w-9 h-9 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(255,107,53,0.5)]"
+                />
+                <img
+                  src="/logo.svg"
+                  alt="GURU EX"
+                  className="h-7 hidden sm:block transition-opacity duration-200 group-hover:opacity-90"
+                />
               </div>
             </Link>
 

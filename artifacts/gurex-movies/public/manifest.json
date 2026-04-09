@@ -1,7 +1,7 @@
 {
-  "name": "GUREX MOVIES",
-  "short_name": "GUREX",
-  "description": "Your ultimate HD movie & TV show discovery app powered by GuruTech API",
+  "name": "GURU EX",
+  "short_name": "GURU EX",
+  "description": "Stream trending movies and TV shows in HD. Powered by GuruTech API.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0b0c0e",
@@ -10,14 +10,10 @@
   "categories": ["entertainment"],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23ff6b23'/><text y='.85em' font-size='140' x='20'>🎬</text></svg>",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23ff6b23'/><text y='.85em' font-size='380' x='50'>🎬</text></svg>",
-      "sizes": "512x512",
-      "type": "image/svg+xml"
+      "src": "/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ],
   "screenshots": [],
