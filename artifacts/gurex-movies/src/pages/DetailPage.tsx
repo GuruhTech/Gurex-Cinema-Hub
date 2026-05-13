@@ -116,6 +116,7 @@ export default function DetailPage() {
         <StreamModal
           subjectId={subject.subjectId}
           title={subject.title}
+          subjectType={subject.subjectType}
           onClose={() => setStreaming(false)}
         />
       )}

@@ -73,7 +73,7 @@ export default function HeroSection({ items }: HeroSectionProps) {
   return (
     <>
       {streaming && (
-        <StreamModal subjectId={item.subjectId} title={item.title} onClose={() => setStreaming(false)} />
+        <StreamModal subjectId={item.subjectId} title={item.title} subjectType={item.subjectType} onClose={() => setStreaming(false)} />
       )}
       {showTrailer && item.trailer && (
         <TrailerModal trailerUrl={item.trailer} title={item.title} onClose={() => setShowTrailer(false)} />
