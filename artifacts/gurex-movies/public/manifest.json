@@ -1,0 +1,32 @@
+{
+  "name": "GURU EX",
+  "short_name": "GURU EX",
+  "description": "Stream trending movies and TV shows in HD. Powered by GuruTech API.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0c0e",
+  "theme_color": "#ff6b35",
+  "orientation": "portrait-primary",
+  "categories": ["entertainment"],
+  "icons": [
+    {
+      "src": "/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Trending",
+      "url": "/trending",
+      "description": "See what's trending"
+    },
+    {
+      "name": "My Watchlist",
+      "url": "/watchlist",
+      "description": "View my watchlist"
+    }
+  ]
+}

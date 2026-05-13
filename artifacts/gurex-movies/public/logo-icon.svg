@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" fill="none">
+  <defs>
+    <linearGradient id="iconGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff8c42"/>
+      <stop offset="100%" stop-color="#e84c0a"/>
+    </linearGradient>
+  </defs>
+  <!-- Badge bg -->
+  <rect x="1" y="1" width="58" height="58" rx="13" fill="url(#iconGrad)"/>
+  <!-- Film notches top -->
+  <rect x="7"  y="1"  width="7" height="8" rx="2.5" fill="rgba(0,0,0,0.35)"/>
+  <rect x="20" y="1"  width="7" height="8" rx="2.5" fill="rgba(0,0,0,0.35)"/>
+  <rect x="33" y="1"  width="7" height="8" rx="2.5" fill="rgba(0,0,0,0.35)"/>
+  <rect x="46" y="1"  width="7" height="8" rx="2.5" fill="rgba(0,0,0,0.35)"/>
+  <!-- Film notches bottom -->
+  <rect x="7"  y="51" width="7" height="8" rx="2.5" fill="rgba(0,0,0,0.35)"/>
+  <rect x="20" y="51" width="7" height="8" rx="2.5" fill="rgba(0,0,0,0.35)"/>
+  <rect x="33" y="51" width="7" height="8" rx="2.5" fill="rgba(0,0,0,0.35)"/>
+  <rect x="46" y="51" width="7" height="8" rx="2.5" fill="rgba(0,0,0,0.35)"/>
+  <!-- Play triangle -->
+  <polygon points="22,19 22,41 43,30" fill="white" opacity="0.95"/>
+</svg>
