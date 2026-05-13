@@ -1,0 +1,9 @@
+{
+  "buildCommand": "pnpm --filter @workspace/gurex-movies run build",
+  "outputDirectory": "artifacts/gurex-movies/dist/public",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
