@@ -2,34 +2,34 @@ import { useQuery } from "@tanstack/react-query";
 import HeroSection from "@/components/HeroSection";
 import MovieRow from "@/components/MovieRow";
 import { SkeletonHero, SkeletonRow } from "@/components/LoadingSpinner";
-import { xcasper } from "@/lib/xcasper";
+import { guruhtech } from "@/lib/guruhtech";
 import { Flame, Star, Tv, Film, Trophy } from "lucide-react";
 import { Link } from "wouter";
 
 export default function HomePage() {
   const { data: trendingMovies, isLoading } = useQuery({
     queryKey: ["trending-movies"],
-    queryFn: () => xcasper.trending.movies(0, 18),
+    queryFn: () => guruhtech.trending.movies(0, 18),
   });
 
   const { data: trendingTV } = useQuery({
     queryKey: ["trending-tv"],
-    queryFn: () => xcasper.trending.tv(0, 18),
+    queryFn: () => guruhtech.trending.tv(0, 18),
   });
 
   const { data: trendingAll } = useQuery({
     queryKey: ["trending-all"],
-    queryFn: () => xcasper.trending.all(0, 24),
+    queryFn: () => guruhtech.trending.all(0, 24),
   });
 
   const { data: hot } = useQuery({
     queryKey: ["hot"],
-    queryFn: () => xcasper.hot(),
+    queryFn: () => guruhtech.hot(),
   });
 
   const { data: ranking } = useQuery({
     queryKey: ["ranking"],
-    queryFn: () => xcasper.ranking(),
+    queryFn: () => guruhtech.ranking(),
   });
 
   const heroItems = trendingAll?.subjectList ?? trendingMovies?.subjectList ?? [];

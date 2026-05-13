@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { Clock, Trash2, Film, Tv } from "lucide-react";
-import { savedWatchLater, type SavedItem, getYear, getRatingColor } from "@/lib/xcasper";
+import { savedWatchLater, type SavedItem, getYear, getRatingColor } from "@/lib/guruhtech";
 
 export default function WatchLaterPage() {
   const [items, setItems] = useState<SavedItem[]>(() => savedWatchLater.get());

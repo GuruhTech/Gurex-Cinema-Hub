@@ -1,18 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import MovieCard from "@/components/MovieCard";
 import { SkeletonCard } from "@/components/LoadingSpinner";
-import { xcasper } from "@/lib/xcasper";
+import { guruhtech } from "@/lib/guruhtech";
 import { Trophy } from "lucide-react";
 
 export default function TopRatedPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["ranking-page"],
-    queryFn: () => xcasper.ranking(),
+    queryFn: () => guruhtech.ranking(),
   });
 
   const { data: hot } = useQuery({
     queryKey: ["hot-top"],
-    queryFn: () => xcasper.hot(),
+    queryFn: () => guruhtech.hot(),
   });
 
   const items = [...(data?.subjectList ?? []), ...(hot?.subjectList ?? [])].filter(

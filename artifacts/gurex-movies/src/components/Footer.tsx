@@ -68,9 +68,9 @@ export default function Footer() {
             <h4 className="text-sm font-semibold text-white/70 mb-3 uppercase tracking-wider">Powered By</h4>
             <div className="flex items-center gap-2 text-sm text-white/40 mb-2">
               <Globe size={13} className="text-primary" />
-              XCASPER Movies API
+              GuruTech Movies API
             </div>
-            <p className="text-xs text-white/25 mt-1">CASPER TECH KENYA DEVELOPERS</p>
+            <p className="text-xs text-white/25 mt-1">GuruTech Kenya Developers</p>
             <a
               href="https://github.com/GuruhTech/Gurex-Cinema-Hub"
               target="_blank"
@@ -85,10 +85,10 @@ export default function Footer() {
 
         <div className="border-t border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-white/25">
-            © {new Date().getFullYear()} Gurex Cinema Hub. For entertainment discovery only.
+            © {new Date().getFullYear()} Gurex Cinema Hub. All rights reserved.
           </p>
           <p className="text-xs text-white/25">
-            Content data provided by XCASPER Movies API
+            Content powered by GuruTech API
           </p>
         </div>
       </div>

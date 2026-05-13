@@ -4,7 +4,7 @@ import { useSearch } from "wouter";
 import { Search, Film, Tv } from "lucide-react";
 import MovieCard from "@/components/MovieCard";
 import { SkeletonCard } from "@/components/LoadingSpinner";
-import { xcasper } from "@/lib/xcasper";
+import { guruhtech } from "@/lib/guruhtech";
 
 export default function SearchPage() {
   const search = useSearch();
@@ -21,7 +21,7 @@ export default function SearchPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["search", debouncedQ, typeFilter],
-    queryFn: () => xcasper.search.query(debouncedQ, 1, 30, typeFilter),
+    queryFn: () => guruhtech.search.query(debouncedQ, 1, 30, typeFilter),
     enabled: debouncedQ.trim().length > 0,
   });
 

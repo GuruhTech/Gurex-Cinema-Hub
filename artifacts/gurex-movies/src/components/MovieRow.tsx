@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import MovieCard from "./MovieCard";
-import type { Subject } from "@/lib/xcasper";
+import type { Subject } from "@/lib/guruhtech";
 
 interface MovieRowProps {
   title: string;

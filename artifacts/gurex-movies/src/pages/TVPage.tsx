@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import MovieCard from "@/components/MovieCard";
 import GenreFilter from "@/components/GenreFilter";
 import { SkeletonCard } from "@/components/LoadingSpinner";
-import { xcasper, GENRES_TV } from "@/lib/xcasper";
+import { guruhtech, GENRES_TV } from "@/lib/guruhtech";
 import { Tv } from "lucide-react";
 
 export default function TVPage() {
@@ -11,12 +11,12 @@ export default function TVPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["browse-tv", selectedGenre],
-    queryFn: () => xcasper.browse.tv({ genre: selectedGenre ?? "", page: 1, perPage: 24 }),
+    queryFn: () => guruhtech.browse.tv({ genre: selectedGenre ?? "", page: 1, perPage: 24 }),
   });
 
   const { data: trending } = useQuery({
     queryKey: ["trending-tv-browse"],
-    queryFn: () => xcasper.trending.tv(0, 24),
+    queryFn: () => guruhtech.trending.tv(0, 24),
     enabled: !selectedGenre,
   });
 

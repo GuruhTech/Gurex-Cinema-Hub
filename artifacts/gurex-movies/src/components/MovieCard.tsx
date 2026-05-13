@@ -4,7 +4,7 @@ import { Star, Bookmark, BookmarkCheck, Heart, Play, Clock, Tv } from "lucide-re
 import {
   type Subject, getYear, getRatingColor,
   savedWatchlist, savedFavorites, savedWatchLater, subjectToSaved,
-} from "@/lib/xcasper";
+} from "@/lib/guruhtech";
 
 interface MovieCardProps {
   item: Subject;
@@ -86,7 +86,7 @@ export default function MovieCard({ item, size = "md" }: MovieCardProps) {
 
           {/* Play button overlay */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/40 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+            <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/50 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
               <Play size={20} fill="white" className="text-white ml-0.5" />
             </div>
           </div>

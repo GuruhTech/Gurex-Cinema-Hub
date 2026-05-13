@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { Bookmark, Trash2, Film, Tv } from "lucide-react";
-import { savedWatchlist, type SavedItem, getYear, getRatingColor } from "@/lib/xcasper";
+import { savedWatchlist, type SavedItem, getYear, getRatingColor } from "@/lib/guruhtech";
 
 export default function WatchlistPage() {
   const [items, setItems] = useState<SavedItem[]>(() => savedWatchlist.get());

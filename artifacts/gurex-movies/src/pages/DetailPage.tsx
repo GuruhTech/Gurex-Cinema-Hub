@@ -3,28 +3,30 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import {
   Play, Star, Calendar, Globe, BookmarkCheck, Bookmark,
-  Heart, ChevronLeft, Tv, Film, Users, ArrowUpRight, Clock
+  Heart, ChevronLeft, Tv, Film, Users, Clock, Youtube
 } from "lucide-react";
 import {
-  xcasper, type Subject,
+  guruhtech, type Subject,
   getYear, formatGenres, getRatingColor,
   savedWatchlist, savedFavorites, savedWatchLater, subjectToSaved,
-} from "@/lib/xcasper";
+} from "@/lib/guruhtech";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import MovieRow from "@/components/MovieRow";
 import StreamModal from "@/components/StreamModal";
+import TrailerModal from "@/components/TrailerModal";
 
 export default function DetailPage() {
   const params = useParams<{ detailPath: string }>();
   const detailPath = params.detailPath ?? "";
 
   const [streaming, setStreaming] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(false);
   const [activeTab, setActiveTab] = useState<"overview" | "cast" | "related">("overview");
   const [showAllCast, setShowAllCast] = useState(false);
 
   const { data: trendingAll } = useQuery({
     queryKey: ["trending-all-detail"],
-    queryFn: () => xcasper.trending.all(0, 20),
+    queryFn: () => guruhtech.trending.all(0, 20),
   });
 
   const matchItem = trendingAll?.subjectList?.find(
@@ -33,15 +35,15 @@ export default function DetailPage() {
 
   const subjectId = matchItem?.subjectId ?? "";
 
-  const { data: richDetail, isLoading, error } = useQuery({
+  const { data: richDetail, isLoading } = useQuery({
     queryKey: ["rich-detail", subjectId],
-    queryFn: () => xcasper.richDetail(subjectId),
+    queryFn: () => guruhtech.richDetail(subjectId),
     enabled: !!subjectId,
   });
 
   const { data: recommended } = useQuery({
     queryKey: ["recommend", subjectId],
-    queryFn: () => xcasper.recommend(subjectId),
+    queryFn: () => guruhtech.recommend(subjectId),
     enabled: !!subjectId,
   });
 
@@ -78,7 +80,7 @@ export default function DetailPage() {
       <div className="min-h-screen flex items-center justify-center pt-20">
         <div className="text-center">
           <p className="text-2xl font-bold text-muted-foreground mb-4">Content not found</p>
-          <p className="text-white/40 text-sm mb-6">This title couldn't be located in our database.</p>
+          <p className="text-white/40 text-sm mb-6">This title couldn't be located in our catalogue.</p>
           <Link href="/">
             <button className="btn-primary px-6 py-3 rounded-full text-white font-semibold">
               Back to Home
@@ -106,6 +108,7 @@ export default function DetailPage() {
   const backdropUrl = subject.stills?.url || subject.cover?.url || "";
   const staffList = (richDetail as any)?.staffList ?? [];
   const displayedCast = showAllCast ? staffList : staffList.slice(0, 12);
+  const hasTrailer = !!(subject as any).trailer;
 
   return (
     <>
@@ -116,24 +119,30 @@ export default function DetailPage() {
           onClose={() => setStreaming(false)}
         />
       )}
+      {showTrailer && (subject as any).trailer && (
+        <TrailerModal
+          trailerUrl={(subject as any).trailer}
+          title={subject.title}
+          onClose={() => setShowTrailer(false)}
+        />
+      )}
 
       <div className="min-h-screen">
         {/* Backdrop */}
-        <div className="relative w-full h-[60vh] min-h-[400px] max-h-[600px] overflow-hidden">
+        <div className="relative w-full h-[62vh] min-h-[420px] max-h-[640px] overflow-hidden">
           {backdropUrl && (
             <img
               src={backdropUrl}
               alt={subject.title}
-              className="w-full h-full object-cover object-center"
-              style={{ filter: "brightness(0.4) saturate(1.1)" }}
+              className="w-full h-full object-cover object-top"
+              style={{ filter: "brightness(0.38) saturate(1.15)" }}
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-transparent to-transparent" />
 
-          {/* Back button */}
           <Link href="/">
-            <button className="absolute top-20 left-4 sm:left-8 flex items-center gap-2 glass px-3 py-2 rounded-full text-white/80 hover:text-white text-sm transition-all hover:bg-white/10">
+            <button className="absolute top-20 left-4 sm:left-8 flex items-center gap-2 glass px-3 py-2 rounded-full text-white/80 hover:text-white text-sm transition-all hover:bg-white/10 border border-white/10">
               <ChevronLeft size={16} />
               Back
             </button>
@@ -141,7 +150,7 @@ export default function DetailPage() {
         </div>
 
         {/* Content */}
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 -mt-48 relative z-10">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 -mt-52 relative z-10">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Poster */}
             <div className="flex-shrink-0 w-44 sm:w-56 lg:w-64">
@@ -154,7 +163,6 @@ export default function DetailPage() {
 
             {/* Info */}
             <div className="flex-1 pt-4">
-              {/* Type + Country */}
               <div className="flex items-center gap-2 mb-3">
                 <span className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${isTV ? "type-badge-tv" : "type-badge-movie"}`}>
                   {isTV ? <Tv size={11} /> : <Film size={11} />}
@@ -168,11 +176,10 @@ export default function DetailPage() {
                 )}
               </div>
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4 leading-tight tracking-tight">
                 {subject.title}
               </h1>
 
-              {/* Meta row */}
               <div className="flex flex-wrap items-center gap-3 mb-5">
                 {rating > 0 && (
                   <div className="flex items-center gap-1.5 rating-badge px-2.5 py-1.5 rounded-full">
@@ -197,7 +204,6 @@ export default function DetailPage() {
                 )}
               </div>
 
-              {/* Genres */}
               {genres.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-5">
                   {genres.map((g) => (
@@ -206,7 +212,6 @@ export default function DetailPage() {
                 </div>
               )}
 
-              {/* Description */}
               {subject.description && (
                 <p className="text-white/70 text-sm sm:text-base leading-relaxed mb-6 max-w-2xl">
                   {subject.description}
@@ -217,36 +222,46 @@ export default function DetailPage() {
               <div className="flex items-center gap-3 flex-wrap mb-6">
                 <button
                   onClick={() => setStreaming(true)}
-                  className="btn-primary flex items-center gap-2.5 text-white font-bold px-7 py-3.5 rounded-full shadow-lg"
+                  className="btn-primary flex items-center gap-2.5 text-white font-bold px-7 py-3.5 rounded-xl shadow-lg text-sm"
                 >
                   <Play size={17} fill="white" />
-                  Watch Now
+                  Play Now
                 </button>
+
+                {hasTrailer && (
+                  <button
+                    onClick={() => setShowTrailer(true)}
+                    className="flex items-center gap-2 glass px-5 py-3.5 rounded-xl text-sm font-semibold text-white hover:bg-white/10 transition-all border border-white/15"
+                  >
+                    <Youtube size={17} className="text-red-400" />
+                    Trailer
+                  </button>
+                )}
+
                 <button
                   onClick={toggleBookmark}
-                  className={`flex items-center gap-2 glass px-4 py-3.5 rounded-full text-sm font-medium transition-all ${bookmarked ? "text-primary border-primary/40 border" : "text-white/70 hover:text-white"}`}
+                  className={`flex items-center gap-2 glass px-4 py-3.5 rounded-xl text-sm font-medium transition-all border ${bookmarked ? "text-primary border-primary/40" : "text-white/70 hover:text-white border-white/10"}`}
                 >
                   {bookmarked ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
                   {bookmarked ? "Saved" : "Save"}
                 </button>
                 <button
                   onClick={toggleFavorite}
-                  className={`p-3.5 rounded-full glass transition-all hover:scale-110 ${favorited ? "text-red-400" : "text-white/60 hover:text-white"}`}
+                  className={`p-3.5 rounded-xl glass transition-all hover:scale-110 border border-white/10 ${favorited ? "text-red-400" : "text-white/60 hover:text-white"}`}
                 >
                   <Heart size={18} fill={favorited ? "currentColor" : "none"} />
                 </button>
                 <button
                   onClick={toggleWatchLater}
-                  className={`p-3.5 rounded-full glass transition-all hover:scale-110 ${watchLater ? "text-yellow-400" : "text-white/60 hover:text-white"}`}
+                  className={`p-3.5 rounded-xl glass transition-all hover:scale-110 border border-white/10 ${watchLater ? "text-yellow-400" : "text-white/60 hover:text-white"}`}
                 >
                   <Clock size={18} />
                 </button>
               </div>
 
-              {/* Subtitles */}
               {subject.subtitles && (
                 <div className="text-xs text-white/30">
-                  <span className="text-white/50 font-medium">Available subtitles: </span>
+                  <span className="text-white/50 font-medium">Subtitles: </span>
                   {subject.subtitles.split(",").slice(0, 8).join(", ")}
                   {subject.subtitles.split(",").length > 8 && ` +${subject.subtitles.split(",").length - 8} more`}
                 </div>
@@ -272,7 +287,6 @@ export default function DetailPage() {
               ))}
             </div>
 
-            {/* Overview Tab */}
             {activeTab === "overview" && (
               <div className="max-w-3xl">
                 {subject.description ? (
@@ -317,7 +331,6 @@ export default function DetailPage() {
               </div>
             )}
 
-            {/* Cast Tab */}
             {activeTab === "cast" && (
               <div>
                 {staffList.length > 0 ? (
@@ -354,7 +367,6 @@ export default function DetailPage() {
               </div>
             )}
 
-            {/* Related Tab */}
             {activeTab === "related" && (
               <div>
                 {recommended?.subjectList?.length ? (

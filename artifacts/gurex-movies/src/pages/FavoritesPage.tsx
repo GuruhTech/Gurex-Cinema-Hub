@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { Heart, Trash2, Film, Tv } from "lucide-react";
-import { savedFavorites, type SavedItem, getYear, getRatingColor } from "@/lib/xcasper";
+import { savedFavorites, type SavedItem, getYear, getRatingColor } from "@/lib/guruhtech";
 
 export default function FavoritesPage() {
   const [items, setItems] = useState<SavedItem[]>(() => savedFavorites.get());

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import MovieCard from "@/components/MovieCard";
 import { SkeletonCard } from "@/components/LoadingSpinner";
-import { xcasper } from "@/lib/xcasper";
+import { guruhtech } from "@/lib/guruhtech";
 import { Flame, Film, Tv } from "lucide-react";
 
 type Tab = "all" | "movies" | "tv";
@@ -12,15 +12,15 @@ export default function TrendingPage() {
 
   const { data: all, isLoading: loadingAll } = useQuery({
     queryKey: ["trending-all-page"],
-    queryFn: () => xcasper.trending.all(0, 24),
+    queryFn: () => guruhtech.trending.all(0, 24),
   });
   const { data: movies, isLoading: loadingMovies } = useQuery({
     queryKey: ["trending-movies-page"],
-    queryFn: () => xcasper.trending.movies(0, 24),
+    queryFn: () => guruhtech.trending.movies(0, 24),
   });
   const { data: tv, isLoading: loadingTV } = useQuery({
     queryKey: ["trending-tv-page"],
-    queryFn: () => xcasper.trending.tv(0, 24),
+    queryFn: () => guruhtech.trending.tv(0, 24),
   });
 
   const items =
