@@ -1,201 +1,108 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearch } from "wouter";
-import { Link } from "wouter";
-import { Search, Film, Tv, User, Star } from "lucide-react";
-import { tmdb, getImageUrl, formatVoteAverage, getRatingColor, getYear } from "@/lib/tmdb";
-import { SkeletonCard } from "@/components/LoadingSpinner";
+import { Search, Film, Tv } from "lucide-react";
 import MovieCard from "@/components/MovieCard";
+import { SkeletonCard } from "@/components/LoadingSpinner";
+import { xcasper } from "@/lib/xcasper";
 
 export default function SearchPage() {
   const search = useSearch();
   const params = new URLSearchParams(search);
-  const queryParam = params.get("q") || "";
-
-  const [query, setQuery] = useState(queryParam);
-  const [activeTab, setActiveTab] = useState<"all" | "movie" | "tv" | "person">("all");
-  const [page, setPage] = useState(1);
+  const initialQ = params.get("q") ?? "";
+  const [query, setQuery] = useState(initialQ);
+  const [debouncedQ, setDebouncedQ] = useState(initialQ);
+  const [typeFilter, setTypeFilter] = useState<1 | 2 | undefined>(undefined);
 
   useEffect(() => {
-    setQuery(queryParam);
-    setPage(1);
-  }, [queryParam]);
+    const t = setTimeout(() => setDebouncedQ(query), 500);
+    return () => clearTimeout(t);
+  }, [query]);
 
-  const { data: results, isLoading } = useQuery({
-    queryKey: ["search", query, activeTab, page],
-    queryFn: () => {
-      if (!query) return null;
-      if (activeTab === "movie") return tmdb.search.movies(query, page);
-      if (activeTab === "tv") return tmdb.search.tv(query, page);
-      if (activeTab === "person") return tmdb.search.people(query, page);
-      return tmdb.search.multi(query, page);
-    },
-    enabled: !!query,
+  const { data, isLoading } = useQuery({
+    queryKey: ["search", debouncedQ, typeFilter],
+    queryFn: () => xcasper.search.query(debouncedQ, 1, 30, typeFilter),
+    enabled: debouncedQ.trim().length > 0,
   });
 
-  const allResults = (results as any)?.results || [];
-  const movieResults = allResults.filter((r: any) => r.media_type === "movie" || activeTab === "movie");
-  const tvResults = allResults.filter((r: any) => r.media_type === "tv" || activeTab === "tv");
-  const personResults = allResults.filter((r: any) => r.media_type === "person" || activeTab === "person");
+  const items = data?.subjectList ?? [];
 
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-1 h-8 rounded-full bg-primary" />
-            <h1 className="text-3xl sm:text-4xl font-black">Search</h1>
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto mb-10">
+          <div className="flex items-center gap-3 glass rounded-2xl px-5 py-4 border border-primary/20 focus-within:border-primary/50 transition-colors">
+            <Search size={20} className="text-primary flex-shrink-0" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search movies, TV shows..."
+              className="bg-transparent flex-1 text-white placeholder-white/30 outline-none text-base"
+              autoFocus
+            />
           </div>
-          {query && (
-            <p className="text-muted-foreground ml-4">
-              Results for "<span className="text-foreground font-semibold">{query}</span>"
-              {results && ` — ${(results as any).total_results?.toLocaleString()} results`}
-            </p>
-          )}
-        </div>
 
-        {/* Search bar */}
-        <div className="relative max-w-2xl mb-8">
-          <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-            placeholder="Search movies, TV shows, people..."
-            className="w-full pl-12 pr-4 py-3.5 rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-base transition-all"
-          />
-        </div>
-
-        {!query ? (
-          <div className="text-center py-24">
-            <Search size={56} className="mx-auto text-muted-foreground/30 mb-4" />
-            <p className="text-xl font-semibold text-muted-foreground">Search for movies, TV shows, or people</p>
-          </div>
-        ) : (
-          <>
-            {/* Tabs */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
-              {(["all", "movie", "tv", "person"] as const).map((tab) => (
+          {/* Type filter */}
+          {debouncedQ && (
+            <div className="flex gap-2 mt-4 justify-center">
+              {[
+                { label: "All", val: undefined },
+                { label: "Movies", val: 1 as const, icon: Film },
+                { label: "TV Shows", val: 2 as const, icon: Tv },
+              ].map(({ label, val, icon: Icon }) => (
                 <button
-                  key={tab}
-                  onClick={() => { setActiveTab(tab); setPage(1); }}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold capitalize whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 ${
-                    activeTab === tab
-                      ? "bg-primary text-white glow-primary"
-                      : "bg-card border border-border hover:bg-muted"
+                  key={label}
+                  onClick={() => setTypeFilter(val)}
+                  className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    typeFilter === val
+                      ? "bg-primary text-white shadow-lg shadow-primary/30"
+                      : "glass text-white/60 hover:text-white"
                   }`}
                 >
-                  {tab === "movie" && <Film size={14} />}
-                  {tab === "tv" && <Tv size={14} />}
-                  {tab === "person" && <User size={14} />}
-                  {tab === "all" ? "All" : tab === "movie" ? "Movies" : tab === "tv" ? "TV Shows" : "People"}
+                  {Icon && <Icon size={13} />}
+                  {label}
                 </button>
               ))}
             </div>
+          )}
+        </div>
 
-            {isLoading ? (
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4">
-                {Array.from({ length: 12 }).map((_, i) => <SkeletonCard key={i} />)}
-              </div>
-            ) : allResults.length === 0 ? (
-              <div className="text-center py-24">
-                <p className="text-xl font-semibold text-muted-foreground">No results found for "{query}"</p>
-                <p className="text-muted-foreground mt-2">Try a different search term</p>
-              </div>
-            ) : (
-              <>
-                {/* People */}
-                {(activeTab === "all" || activeTab === "person") && personResults.length > 0 && (
-                  <div className="mb-10">
-                    <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                      <User size={18} className="text-primary" />
-                      People
-                    </h2>
-                    <div className="flex gap-4 overflow-x-auto pb-2">
-                      {personResults.map((person: any) => (
-                        <div key={person.id} className="flex-shrink-0 w-28 text-center group">
-                          <div className="w-20 h-20 mx-auto rounded-full overflow-hidden bg-card border-2 border-border group-hover:border-primary transition-colors">
-                            {person.profile_path ? (
-                              <img
-                                src={getImageUrl(person.profile_path, "w185")}
-                                alt={person.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-muted">
-                                <User size={24} className="text-muted-foreground" />
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-xs font-semibold mt-2 line-clamp-1">{person.name}</p>
-                          <p className="text-xs text-muted-foreground">{person.known_for_department}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+        {/* Results */}
+        {!debouncedQ && (
+          <div className="text-center py-20 text-white/30">
+            <Search size={40} className="mx-auto mb-3 opacity-30" />
+            <p className="text-lg font-semibold mb-1">Discover Movies & Shows</p>
+            <p className="text-sm">Type something to start searching</p>
+          </div>
+        )}
 
-                {/* Movies */}
-                {(activeTab === "all" || activeTab === "movie") && movieResults.length > 0 && (
-                  <div className="mb-10">
-                    {activeTab === "all" && (
-                      <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                        <Film size={18} className="text-primary" />
-                        Movies
-                      </h2>
-                    )}
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4">
-                      {movieResults.map((item: any) => (
-                        <div key={item.id} className="flex justify-center">
-                          <MovieCard item={item} mediaType="movie" size="sm" showType={false} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+        {debouncedQ && isLoading && (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
+            {Array.from({ length: 18 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        )}
 
-                {/* TV */}
-                {(activeTab === "all" || activeTab === "tv") && tvResults.length > 0 && (
-                  <div className="mb-10">
-                    {activeTab === "all" && (
-                      <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                        <Tv size={18} className="text-primary" />
-                        TV Shows
-                      </h2>
-                    )}
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4">
-                      {tvResults.map((item: any) => (
-                        <div key={item.id} className="flex justify-center">
-                          <MovieCard item={item} mediaType="tv" size="sm" showType={false} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+        {debouncedQ && !isLoading && items.length === 0 && (
+          <div className="text-center py-20 text-white/30">
+            <Search size={40} className="mx-auto mb-3 opacity-30" />
+            <p className="text-lg font-semibold mb-1">No results</p>
+            <p className="text-sm">Try a different keyword</p>
+          </div>
+        )}
 
-                {/* Pagination */}
-                {results && (results as any).total_pages > 1 && (
-                  <div className="flex items-center justify-center gap-3 mt-10">
-                    <button
-                      disabled={page <= 1}
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      className="px-5 py-2 rounded-full bg-card border border-border text-sm font-medium disabled:opacity-40 hover:bg-muted transition-colors"
-                    >
-                      Previous
-                    </button>
-                    <span className="text-sm text-muted-foreground">Page {page} of {(results as any).total_pages}</span>
-                    <button
-                      disabled={page >= (results as any).total_pages}
-                      onClick={() => setPage((p) => p + 1)}
-                      className="px-5 py-2 rounded-full bg-card border border-border text-sm font-medium disabled:opacity-40 hover:bg-muted transition-colors"
-                    >
-                      Next
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
+        {debouncedQ && !isLoading && items.length > 0 && (
+          <>
+            <p className="text-sm text-white/40 mb-5">
+              {items.length} result{items.length !== 1 ? "s" : ""} for{" "}
+              <span className="text-white font-semibold">"{debouncedQ}"</span>
+            </p>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4">
+              {items.map((item) => (
+                <MovieCard key={item.subjectId} item={item} size="sm" />
+              ))}
+            </div>
           </>
         )}
       </div>

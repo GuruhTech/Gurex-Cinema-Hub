@@ -3,8 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HomePage from "@/pages/HomePage";
-import MovieDetailPage from "@/pages/MovieDetailPage";
-import TVDetailPage from "@/pages/TVDetailPage";
+import DetailPage from "@/pages/DetailPage";
 import MoviesPage from "@/pages/MoviesPage";
 import TVPage from "@/pages/TVPage";
 import TrendingPage from "@/pages/TrendingPage";
@@ -29,8 +28,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <Route path="/movie/:id" component={MovieDetailPage} />
-      <Route path="/tv/:id" component={TVDetailPage} />
+      <Route path="/detail/:detailPath+" component={DetailPage} />
       <Route path="/movies" component={MoviesPage} />
       <Route path="/tv" component={TVPage} />
       <Route path="/trending" component={TrendingPage} />

@@ -3,16 +3,18 @@ import { Film, Home } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center px-4">
-        <div className="text-8xl font-black gradient-text mb-4">404</div>
-        <Film size={48} className="mx-auto text-muted-foreground/30 mb-4" />
-        <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
-        <p className="text-muted-foreground mb-8">The page you're looking for doesn't exist.</p>
+    <div className="min-h-screen flex items-center justify-center px-4 pt-20">
+      <div className="text-center">
+        <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-primary/15 border border-primary/20 flex items-center justify-center">
+          <Film size={36} className="text-primary" />
+        </div>
+        <h1 className="text-6xl font-black text-white mb-3">404</h1>
+        <p className="text-xl font-semibold text-white/60 mb-2">Page not found</p>
+        <p className="text-sm text-white/30 mb-8">The page you're looking for doesn't exist</p>
         <Link href="/">
-          <button className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold px-6 py-3 rounded-full mx-auto transition-all duration-200 hover:scale-105">
-            <Home size={18} />
-            Go Home
+          <button className="btn-primary flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold mx-auto">
+            <Home size={16} />
+            Back to Home
           </button>
         </Link>
       </div>

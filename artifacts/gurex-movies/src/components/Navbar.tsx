@@ -1,17 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Search, BookmarkCheck, Home, Flame, Star, Tv, Film, Menu, X, Heart, Download, Clock } from "lucide-react";
-import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { Search, Home, Flame, Star, Tv, Film, Menu, X, Heart, Clock, Bookmark, ChevronDown } from "lucide-react";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [showInstallToast, setShowInstallToast] = useState(false);
   const [, navigate] = useLocation();
+  const [location] = useLocation();
   const searchRef = useRef<HTMLInputElement>(null);
-  const { canInstall, isInstalled, install } = usePWAInstall();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -20,10 +18,13 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (searchOpen && searchRef.current) {
-      searchRef.current.focus();
-    }
+    if (searchOpen && searchRef.current) searchRef.current.focus();
   }, [searchOpen]);
+
+  useEffect(() => {
+    setMobileOpen(false);
+    setSearchOpen(false);
+  }, [location]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,15 +32,6 @@ export default function Navbar() {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchOpen(false);
       setSearchQuery("");
-      setMobileOpen(false);
-    }
-  };
-
-  const handleInstall = async () => {
-    const accepted = await install();
-    if (!accepted) {
-      setShowInstallToast(true);
-      setTimeout(() => setShowInstallToast(false), 4000);
     }
   };
 
@@ -51,129 +43,106 @@ export default function Navbar() {
     { href: "/top-rated", label: "Top Rated", icon: Star },
   ];
 
+  const isActive = (href: string) => (href === "/" ? location === "/" : location.startsWith(href));
+
   return (
     <>
-      {/* Install toast notification */}
-      {showInstallToast && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[200] px-4 py-3 rounded-xl glass border border-primary/30 shadow-xl flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
-          <Download size={16} className="text-primary flex-shrink-0" />
-          <div>
-            <p className="text-sm font-semibold">Install GUREX MOVIES</p>
-            <p className="text-xs text-muted-foreground">Tap your browser menu → "Add to Home Screen"</p>
-          </div>
-          <button onClick={() => setShowInstallToast(false)} className="p-1 rounded-full hover:bg-card ml-1">
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? "nav-scrolled" : "bg-transparent"
+          scrolled || mobileOpen ? "nav-scrolled" : "bg-gradient-to-b from-black/70 to-transparent"
         }`}
       >
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-18">
+          <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/">
               <div className="flex items-center gap-2.5 cursor-pointer group">
-                <img
-                  src="/logo-icon.svg"
-                  alt="GURU EX icon"
-                  className="w-9 h-9 transition-all duration-300 group-hover:scale-110 drop-shadow-[0_0_8px_rgba(255,107,53,0.5)]"
-                />
-                <img
-                  src="/logo.svg"
-                  alt="GURU EX"
-                  className="h-7 hidden sm:block transition-opacity duration-200 group-hover:opacity-90"
-                />
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg group-hover:shadow-primary/40 transition-shadow">
+                  <Film size={16} className="text-white" />
+                </div>
+                <span className="font-black text-xl tracking-tight">
+                  <span className="gradient-text">GUREX</span>
+                  <span className="text-white/80 font-light ml-1 text-sm">CINEMA</span>
+                </span>
               </div>
             </Link>
 
-            {/* Desktop Nav Links */}
+            {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-1">
               {navLinks.map(({ href, label, icon: Icon }) => (
-                <NavLink key={href} href={href} icon={Icon}>
-                  {label}
-                </NavLink>
+                <Link key={href} href={href}>
+                  <button
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive(href)
+                        ? "text-white bg-primary/20 border border-primary/30"
+                        : "text-white/60 hover:text-white hover:bg-white/8"
+                    }`}
+                  >
+                    <Icon size={14} />
+                    {label}
+                  </button>
+                </Link>
               ))}
             </div>
 
-            {/* Right Side */}
-            <div className="flex items-center gap-1.5">
-              {/* Search toggle */}
+            {/* Right Actions */}
+            <div className="flex items-center gap-2">
+              {/* Search */}
               {searchOpen ? (
                 <form onSubmit={handleSearch} className="flex items-center">
-                  <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <div className="flex items-center gap-2 glass rounded-full px-4 py-2 border border-primary/30">
+                    <Search size={15} className="text-primary" />
                     <input
                       ref={searchRef}
                       type="search"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search movies, TV shows..."
-                      className="pl-9 pr-4 py-2 rounded-full bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary w-64 sm:w-80 transition-all"
+                      placeholder="Search movies, shows..."
+                      className="bg-transparent text-sm text-white placeholder-white/40 outline-none w-48 sm:w-64"
                     />
+                    <button type="button" onClick={() => { setSearchOpen(false); setSearchQuery(""); }}>
+                      <X size={15} className="text-white/50 hover:text-white transition-colors" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setSearchOpen(false)}
-                    className="ml-2 p-2 rounded-full hover:bg-card transition-colors"
-                  >
-                    <X size={18} className="text-muted-foreground" />
-                  </button>
                 </form>
               ) : (
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="p-2 rounded-full hover:bg-card transition-all duration-200 hover:scale-110"
-                  aria-label="Search"
+                  className="p-2.5 rounded-full text-white/60 hover:text-white hover:bg-white/8 transition-all"
                 >
-                  <Search size={20} className="text-foreground" />
+                  <Search size={18} />
                 </button>
               )}
 
-              <Link href="/watch-later">
-                <button className="p-2 rounded-full hover:bg-card transition-all duration-200 hover:scale-110" aria-label="Watch Later">
-                  <Clock size={20} className="text-foreground" />
+              {/* My Stuff dropdown (desktop) */}
+              <div className="relative group hidden md:block">
+                <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/8 transition-all">
+                  <Bookmark size={15} />
+                  My List
+                  <ChevronDown size={12} />
                 </button>
-              </Link>
-
-              <Link href="/favorites">
-                <button className="p-2 rounded-full hover:bg-card transition-all duration-200 hover:scale-110" aria-label="Favorites">
-                  <Heart size={20} className="text-foreground" />
-                </button>
-              </Link>
-
-              <Link href="/watchlist">
-                <button className="p-2 rounded-full hover:bg-card transition-all duration-200 hover:scale-110" aria-label="Watchlist">
-                  <BookmarkCheck size={20} className="text-foreground" />
-                </button>
-              </Link>
-
-              {/* PWA Install Button */}
-              {(canInstall || !isInstalled) && (
-                <button
-                  onClick={handleInstall}
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 hover:scale-105"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,107,53,0.05))",
-                    border: "1px solid rgba(255,107,53,0.3)",
-                    color: "#ff6b35",
-                  }}
-                  aria-label="Install App"
-                  title={isInstalled ? "App installed!" : "Install GUREX MOVIES as an app"}
-                >
-                  <Download size={13} />
-                  <span className="hidden lg:block">{isInstalled ? "Installed" : "Install App"}</span>
-                </button>
-              )}
+                <div className="absolute right-0 top-full pt-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200">
+                  <div className="glass border border-white/10 rounded-xl p-1 min-w-40 shadow-2xl">
+                    {[
+                      { href: "/watchlist", label: "Watchlist", icon: Bookmark },
+                      { href: "/favorites", label: "Favorites", icon: Heart },
+                      { href: "/watch-later", label: "Watch Later", icon: Clock },
+                    ].map(({ href, label, icon: Icon }) => (
+                      <Link key={href} href={href}>
+                        <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/8 transition-all text-left">
+                          <Icon size={14} className="text-primary" />
+                          {label}
+                        </button>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
               {/* Mobile menu toggle */}
               <button
+                className="md:hidden p-2.5 rounded-full text-white/60 hover:text-white hover:bg-white/8 transition-all"
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="p-2 rounded-full hover:bg-card transition-colors md:hidden"
-                aria-label="Menu"
               >
                 {mobileOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
@@ -183,76 +152,39 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {mobileOpen && (
-          <div className="md:hidden glass border-t border-border">
-            <div className="px-4 py-3 space-y-1">
+          <div className="md:hidden border-t border-white/8 bg-background/98">
+            <div className="px-4 py-4 space-y-1">
               {navLinks.map(({ href, label, icon: Icon }) => (
                 <Link key={href} href={href}>
                   <button
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-card text-sm font-medium transition-colors"
+                    className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                      isActive(href)
+                        ? "text-white bg-primary/20 border border-primary/20"
+                        : "text-white/60 hover:text-white hover:bg-white/5"
+                    }`}
                   >
-                    <Icon size={18} className="text-primary" />
+                    <Icon size={16} />
                     {label}
                   </button>
                 </Link>
               ))}
-              <Link href="/watch-later">
-                <button onClick={() => setMobileOpen(false)} className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-card text-sm font-medium transition-colors">
-                  <Clock size={18} className="text-blue-400" />
-                  Watch Later
-                </button>
-              </Link>
-              <button
-                onClick={() => { handleInstall(); setMobileOpen(false); }}
-                className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-card text-sm font-medium transition-colors text-primary"
-              >
-                <Download size={18} className="text-primary" />
-                {isInstalled ? "App Installed ✓" : "Install as App"}
-              </button>
-              <form onSubmit={handleSearch} className="pt-2">
-                <div className="relative">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    type="search"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search..."
-                    className="w-full pl-9 pr-4 py-2 rounded-full bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-              </form>
+              <div className="h-px bg-white/8 my-2" />
+              {[
+                { href: "/watchlist", label: "Watchlist", icon: Bookmark },
+                { href: "/favorites", label: "Favorites", icon: Heart },
+                { href: "/watch-later", label: "Watch Later", icon: Clock },
+              ].map(({ href, label, icon: Icon }) => (
+                <Link key={href} href={href}>
+                  <button className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all">
+                    <Icon size={16} className="text-primary" />
+                    {label}
+                  </button>
+                </Link>
+              ))}
             </div>
           </div>
         )}
       </nav>
     </>
-  );
-}
-
-function NavLink({
-  href,
-  children,
-  icon: Icon,
-}: {
-  href: string;
-  children: React.ReactNode;
-  icon: React.ElementType;
-}) {
-  const [location] = useLocation();
-  const isActive = location === href;
-
-  return (
-    <Link href={href}>
-      <button
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-          isActive
-            ? "text-primary bg-primary/10"
-            : "text-muted-foreground hover:text-foreground hover:bg-card"
-        }`}
-      >
-        <Icon size={15} />
-        {children}
-      </button>
-    </Link>
   );
 }

@@ -2,145 +2,109 @@ import { useQuery } from "@tanstack/react-query";
 import HeroSection from "@/components/HeroSection";
 import MovieRow from "@/components/MovieRow";
 import { SkeletonHero, SkeletonRow } from "@/components/LoadingSpinner";
-import { tmdb } from "@/lib/tmdb";
-import { Flame, TrendingUp, Star, Clock, Tv, Film } from "lucide-react";
+import { xcasper } from "@/lib/xcasper";
+import { Flame, Star, Tv, Film, Trophy } from "lucide-react";
 import { Link } from "wouter";
 
 export default function HomePage() {
-  const { data: trending, isLoading: loadingTrending } = useQuery({
+  const { data: trendingMovies, isLoading } = useQuery({
     queryKey: ["trending-movies"],
-    queryFn: () => tmdb.movies.trending("week"),
-  });
-
-  const { data: popular } = useQuery({
-    queryKey: ["popular-movies"],
-    queryFn: () => tmdb.movies.popular(),
-  });
-
-  const { data: topRated } = useQuery({
-    queryKey: ["top-rated-movies"],
-    queryFn: () => tmdb.movies.topRated(),
-  });
-
-  const { data: nowPlaying } = useQuery({
-    queryKey: ["now-playing"],
-    queryFn: () => tmdb.movies.nowPlaying(),
-  });
-
-  const { data: upcoming } = useQuery({
-    queryKey: ["upcoming-movies"],
-    queryFn: () => tmdb.movies.upcoming(),
+    queryFn: () => xcasper.trending.movies(0, 18),
   });
 
   const { data: trendingTV } = useQuery({
     queryKey: ["trending-tv"],
-    queryFn: () => tmdb.tv.trending("week"),
+    queryFn: () => xcasper.trending.tv(0, 18),
   });
 
-  const { data: popularTV } = useQuery({
-    queryKey: ["popular-tv"],
-    queryFn: () => tmdb.tv.popular(),
-  });
-
-  const { data: allTrending } = useQuery({
+  const { data: trendingAll } = useQuery({
     queryKey: ["trending-all"],
-    queryFn: () => tmdb.trending.all("day"),
+    queryFn: () => xcasper.trending.all(0, 24),
   });
+
+  const { data: hot } = useQuery({
+    queryKey: ["hot"],
+    queryFn: () => xcasper.hot(),
+  });
+
+  const { data: ranking } = useQuery({
+    queryKey: ["ranking"],
+    queryFn: () => xcasper.ranking(),
+  });
+
+  const heroItems = trendingAll?.subjectList ?? trendingMovies?.subjectList ?? [];
 
   return (
     <div className="min-h-screen">
-      {/* Hero */}
-      {loadingTrending ? (
-        <SkeletonHero />
-      ) : trending?.results ? (
-        <HeroSection movies={trending.results} />
-      ) : null}
+      {isLoading ? <SkeletonHero /> : heroItems.length ? <HeroSection items={heroItems} /> : null}
 
-      {/* Main Content */}
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
         {/* Category Quick Links */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-12">
           {[
-            { href: "/trending", label: "Trending Now", icon: Flame, color: "from-orange-600 to-red-600" },
-            { href: "/movies", label: "All Movies", icon: Film, color: "from-blue-600 to-indigo-600" },
-            { href: "/tv", label: "TV Shows", icon: Tv, color: "from-purple-600 to-pink-600" },
-            { href: "/top-rated", label: "Top Rated", icon: Star, color: "from-yellow-600 to-orange-600" },
-          ].map(({ href, label, icon: Icon, color }) => (
+            { href: "/trending", label: "Trending Now", icon: Flame, from: "from-violet-700", to: "to-purple-600" },
+            { href: "/movies", label: "All Movies", icon: Film, from: "from-indigo-700", to: "to-blue-600" },
+            { href: "/tv", label: "TV Shows", icon: Tv, from: "from-pink-700", to: "to-rose-600" },
+            { href: "/top-rated", label: "Top Rated", icon: Star, from: "from-amber-600", to: "to-orange-600" },
+          ].map(({ href, label, icon: Icon, from, to }) => (
             <Link key={href} href={href}>
-              <div className={`relative overflow-hidden rounded-xl p-5 cursor-pointer group card-hover bg-gradient-to-br ${color}`}>
+              <div className={`relative overflow-hidden rounded-2xl p-5 cursor-pointer group bg-gradient-to-br ${from} ${to} hover:scale-[1.03] transition-transform duration-300`}>
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                <Icon size={28} className="text-white mb-2 relative z-10" />
-                <p className="text-white font-bold text-sm relative z-10">{label}</p>
+                <div className="absolute -bottom-3 -right-3 opacity-10">
+                  <Icon size={64} className="text-white" />
+                </div>
+                <Icon size={26} className="text-white mb-2.5 relative z-10 drop-shadow-md" />
+                <p className="text-white font-bold text-sm relative z-10 drop-shadow-sm">{label}</p>
               </div>
             </Link>
           ))}
         </div>
 
         {/* Rows */}
-        {loadingTrending ? (
+        {isLoading ? (
           <>
+            <SkeletonRow />
             <SkeletonRow />
             <SkeletonRow />
           </>
         ) : (
           <>
-            {trending?.results && (
+            {trendingMovies?.subjectList?.length ? (
               <MovieRow
                 title="Trending Movies"
-                items={trending.results}
-                mediaType="movie"
+                icon={<Flame size={18} />}
+                items={trendingMovies.subjectList}
                 viewAllHref="/trending"
               />
-            )}
-            {nowPlaying?.results && (
-              <MovieRow
-                title="Now Playing"
-                items={nowPlaying.results}
-                mediaType="movie"
-                viewAllHref="/movies?filter=now_playing"
-              />
-            )}
-            {popular?.results && (
-              <MovieRow
-                title="Popular Movies"
-                items={popular.results}
-                mediaType="movie"
-                viewAllHref="/movies"
-              />
-            )}
-            {trendingTV?.results && (
+            ) : null}
+
+            {trendingTV?.subjectList?.length ? (
               <MovieRow
                 title="Trending TV Shows"
-                items={trendingTV.results}
-                mediaType="tv"
+                icon={<Tv size={18} />}
+                items={trendingTV.subjectList}
                 viewAllHref="/tv"
               />
-            )}
-            {topRated?.results && (
+            ) : null}
+
+            {hot?.subjectList?.length ? (
               <MovieRow
-                title="Top Rated Movies"
-                items={topRated.results}
-                mediaType="movie"
+                title="Hot Right Now"
+                icon={<Flame size={18} />}
+                items={hot.subjectList}
+                viewAllHref="/trending"
+              />
+            ) : null}
+
+            {ranking?.subjectList?.length ? (
+              <MovieRow
+                title="Top Rankings"
+                icon={<Trophy size={18} />}
+                items={ranking.subjectList}
                 viewAllHref="/top-rated"
                 size="lg"
               />
-            )}
-            {upcoming?.results && (
-              <MovieRow
-                title="Coming Soon"
-                items={upcoming.results}
-                mediaType="movie"
-                viewAllHref="/movies?filter=upcoming"
-              />
-            )}
-            {popularTV?.results && (
-              <MovieRow
-                title="Popular TV Shows"
-                items={popularTV.results}
-                mediaType="tv"
-                viewAllHref="/tv"
-              />
-            )}
+            ) : null}
           </>
         )}
       </div>
